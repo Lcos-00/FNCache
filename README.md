@@ -1,4 +1,6 @@
 # FNCache
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fareniya%2FFNCache.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fareniya%2FFNCache?ref=badge_shield)
+
 
 FNCache is an experimental eBPF datapath project for accelerating selected
 cross-node Pod IPv4 traffic in a Flannel VXLAN environment.
@@ -75,3 +77,6 @@ Original contributions in this repository are provided under the Apache
 License, Version 2.0. Third-party or paper-derived material, if present,
 remains subject to its applicable attribution and license requirements.
 See `LICENSE`.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fareniya%2FFNCache.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fareniya%2FFNCache?ref=badge_large)
