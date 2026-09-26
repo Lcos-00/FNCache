@@ -1,4 +1,4 @@
-name: M1 BPF CI
+name: FNCache CI
 
 on:
   push:
@@ -9,8 +9,98 @@ permissions:
   contents: read
 
 jobs:
-  bpf:
-    name: Build and test BPF datapath
+  go-format:
+    name: Check Go formatting
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify Go formatting
+        run: |
+          set -euo pipefail
+          files="$(gofmt -l .)"
+          if [[ -n "${files}" ]]; then
+            printf 'Go files are not formatted:\n%s\n' "${files}"
+            exit 1
+          fi
+
+  go-static:
+    name: Run Go static checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Verify Go module files
+        run: go mod tidy -diff
+
+      - name: Run go vet
+        run: go vet ./...
+
+  go-test:
+    name: Run Go tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Run tests with race detection
+        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+
+  go-build:
+    name: Build Go packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Build Go packages
+        run: go build ./...
+
+  bpf-build:
+    name: Build BPF datapath and ABI
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -46,6 +136,29 @@ jobs:
             CC=gcc \
             BUILD_DIR="$BUILD_ROOT/tests" \
             test
+
+  bpf-behavior:
+    name: Test BPF behavior and fault injection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            clang \
+            llvm \
+            gcc \
+            make \
+            pkg-config \
+            libbpf-dev \
+            libelf-dev \
+            zlib1g-dev
 
       - name: Run BPF behavior and fault-injection tests
         env:
