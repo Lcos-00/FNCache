@@ -1,7 +1,7 @@
 # FNCache
 
-FNCache is an experimental eBPF datapath project for accelerating selected
-cross-node Pod IPv4 traffic in a Flannel VXLAN environment.
+FNCache is an eBPF datapath project for accelerating selected
+cross-node Pod IPv4 traffic in an Overlay environment(only for Flannel VXLAN Now).
 
 ## License
 
